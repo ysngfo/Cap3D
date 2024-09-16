@@ -306,24 +306,22 @@ for uid_path in uid_paths:
                         camera.location = Vector((distance * ratio, - distance * ratio, distance * elevation_factor * ratio))
                 if len(flag_list) == 0:
                     break
-        elif camera_opt == 1:
-            camera.location = Vector((- distance * ratio,  distance * ratio, distance * elevation_factor * ratio))
-        elif camera_opt == 2:
-            elevation_factor = 0.5
-            camera.location = Vector((distance * ratio,  -distance * ratio*0.5, distance * elevation_factor * ratio))
-        elif camera_opt == 3:
-            elevation_factor = 0.7
-            camera.location = Vector((- distance * ratio *0.5,  distance * ratio, distance * elevation_factor * ratio))
-        elif camera_opt == 4:
-            camera.location = Vector((distance * ratio,  distance * ratio, distance * elevation_factor * ratio))
-        elif camera_opt == 5:
-            camera.location = Vector((-distance * ratio,  -distance * ratio, distance * elevation_factor * ratio))
-        elif camera_opt == 6:
-            elevation_factor = 0.5
-            camera.location = Vector((distance * ratio,  distance * ratio*0.5, -distance * elevation_factor * ratio))
-        elif camera_opt == 7:
-            elevation_factor = 0.7
-            camera.location = Vector((- distance * ratio *0.5,  -distance * ratio, -distance * elevation_factor * ratio))
+        if camera_opt == 1:  # xy角度为0度，z为45度
+            camera.location = Vector((distance * ratio, 0, distance * elevation_factor * ratio))
+        elif camera_opt == 2:  # xy角度为90度，z为45度
+            camera.location = Vector((0, distance * ratio, distance * elevation_factor * ratio))
+        elif camera_opt == 3:  # xy角度为180度，z为45度
+            camera.location = Vector((-distance * ratio, 0, distance * elevation_factor * ratio))
+        elif camera_opt == 4:  # xy角度为270度，z为45度
+            camera.location = Vector((0, -distance * ratio, distance * elevation_factor * ratio))
+        elif camera_opt == 5:  # xy角度为0度，z为-45度
+            camera.location = Vector((distance * ratio, 0, -distance * elevation_factor * ratio))
+        elif camera_opt == 6:  # xy角度为90度，z为-45度
+            camera.location = Vector((0, distance * ratio, -distance * elevation_factor * ratio))
+        elif camera_opt == 7:  # xy角度为180度，z为-45度
+            camera.location = Vector((-distance * ratio, 0, -distance * elevation_factor * ratio))
+        elif camera_opt == 8:  # xy角度为270度，z为-45度
+            camera.location = Vector((0, -distance * ratio, -distance * elevation_factor * ratio))
 
         # Make the camera point at the bounding box center
         direction = (bbox_center - camera.location).normalized()
@@ -355,29 +353,6 @@ for uid_path in uid_paths:
 
         bpy.ops.render.render(write_still=True)
 
-        def get_3x4_RT_matrix_from_blender(cam):
-            # Use matrix_world instead to account for all constraints
-            location, rotation = cam.matrix_world.decompose()[0:2]
-            R_world2bcam = rotation.to_matrix().transposed()
-
-            # Use location from matrix_world to account for constraints:     
-            T_world2bcam = -1*R_world2bcam @ location
-
-            # put into 3x4 matrix
-            RT = Matrix((
-                R_world2bcam[0][:] + (T_world2bcam[0],),
-                R_world2bcam[1][:] + (T_world2bcam[1],),
-                R_world2bcam[2][:] + (T_world2bcam[2],)
-                ))
-            return RT
-
-        if camera_opt>=0:
-            RT = get_3x4_RT_matrix_from_blender(camera)
-            
-            RT_path = os.path.join(args.parent_dir, 'Cap3D_imgs', 'Cap3D_imgs_view%d_CamMatrix'%camera_opt, '%s_%d.npy'%(uid_path.split('/')[-1].split('.')[0], camera_opt))
-            if os.path.exists(RT_path):
-                continue
-            np.save(RT_path, RT)
 
 bpy.ops.wm.quit_blender()
 
